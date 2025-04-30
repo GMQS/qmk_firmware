@@ -25,7 +25,7 @@ volatile uint8_t led_scrolllock = false;
 uint8_t layer;
 
 bool clock_set_mode = false;
-uint8_t oled_mode = OLED_DEFAULT;
+uint8_t oled_mode = OLED_KIRBY;
 bool oled_repaint_requested = false;
 bool oled_wakeup_requested = false;
 uint32_t oled_sleep_timer;
@@ -53,7 +53,7 @@ void board_init(void) {
 void keyboard_post_init_kb(void) {
       /*
         This is a workaround to some really weird behavior
-        Without this code, the OLED will turn on, but not when you initially plug the keyboard in. 
+        Without this code, the OLED will turn on, but not when you initially plug the keyboard in.
         You have to manually trigger a user reset to get the OLED to initialize properly
         I'm not sure what the root cause is at this time, but this workaround fixes it.
     */
@@ -71,7 +71,7 @@ void keyboard_post_init_kb(void) {
 void custom_set_value(uint8_t *data) {
     uint8_t *value_id = &(data[0]);
     uint8_t *value_data = &(data[1]);
-    
+
     switch ( *value_id ) {
         case id_oled_default_mode:
         {
@@ -106,7 +106,7 @@ void custom_set_value(uint8_t *data) {
 void custom_get_value(uint8_t *data) {
     uint8_t *value_id = &(data[0]);
     uint8_t *value_data = &(data[1]);
-    
+
     switch ( *value_id ) {
         case id_oled_default_mode:
         {

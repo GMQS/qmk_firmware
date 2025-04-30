@@ -1,1 +1,2 @@
 #define BONGO_ENABLE
+#define KIRBY_ENABLE

@@ -8,6 +8,9 @@
 #include "bongo.h"
 #endif
 
+#ifdef KIRBY_ENABLE
+#include "kirby.h"
+#endif
 
 void draw_default(void);
 void draw_clock(void);
@@ -27,7 +30,11 @@ bool oled_task_kb(void) {
         return false;
     }
     switch (oled_mode) {
-        default:
+        #ifdef KIRBY_ENABLE
+        case OLED_KIRBY:
+            draw_kirby();
+            break;
+        #endif
         case OLED_DEFAULT:
             draw_default();
             break;

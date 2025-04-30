@@ -39,6 +39,9 @@ enum custom_encoder_behavior {
 };
 
 enum oled_modes {
+  #ifdef KIRBY_ENABLE
+  OLED_KIRBY,
+  #endif
   OLED_DEFAULT,
   OLED_TIME,
 #ifdef BONGO_ENABLE
