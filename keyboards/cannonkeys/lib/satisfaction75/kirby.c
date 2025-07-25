@@ -3,7 +3,6 @@
 #include "satisfaction_core.h"
 
 #define min(x, y) (((x) >= (y)) ? (y) : (x))
-#define wpm() get_current_wpm()
 
 typedef enum {
     KIRBY_IDLE,
@@ -15,8 +14,8 @@ typedef enum {
     KIRBY_EXHALE,
 } kirby_state_t;
 
-static kirby_state_t kirby_state       = KIRBY_IDLE;
-static kirby_state_t prev_kirby_state  = KIRBY_IDLE;
+static kirby_state_t kirby_state       = KIRBY_WALK;
+static kirby_state_t prev_kirby_state  = KIRBY_WALK;
 static uint8_t       kirby_frame_index = 0;
 static uint32_t      kirby_timer       = 0;
 static bool          prev_jump_state   = false;
@@ -65,25 +64,12 @@ void draw_kirby(void) {
     uint8_t mod = get_mods();
     bool shift   = mod & MOD_MASK_SHIFT;
     bool ctrl = mod & MOD_MASK_CTRL;
-    bool is_walk = wpm() > KIRBY_MIN_WALK_SPEED;
 
     // 状態遷移
     switch (kirby_state) {
-        case KIRBY_IDLE:
-            if (shift || ctrl) {
-                kirby_state = KIRBY_INHALE;
-            } else if (is_walk) {
-                kirby_state = KIRBY_WALK;
-            } else if (is_jump) {
-                kirby_state = KIRBY_JUMP;
-                is_jump = false;
-            }
-            break;
         case KIRBY_WALK:
             if (shift || ctrl) {
                 kirby_state = KIRBY_INHALE;
-            } else if (!is_walk) {
-                kirby_state = KIRBY_IDLE;
             } else if (is_jump) {
                 kirby_state = KIRBY_JUMP;
                 is_jump = false;
@@ -93,7 +79,7 @@ void draw_kirby(void) {
             if (shift || ctrl) {
                 kirby_state = KIRBY_INHALE;
             } else if (kirby_frame_index >= KIRBY_JUMP_FRAMES) {
-                kirby_state = KIRBY_IDLE;
+                kirby_state = KIRBY_WALK;
             }
             break;
         case KIRBY_INHALE:
@@ -106,22 +92,13 @@ void draw_kirby(void) {
         case KIRBY_INHALED_IDLE:
             if (!shift && !ctrl) {
                 kirby_state = KIRBY_EXHALE;
-            } else if (is_walk) {
-                kirby_state = KIRBY_INHALED_WALK;
-            }
-            break;
-        case KIRBY_INHALED_WALK:
-            if (!shift && !ctrl) {
-                kirby_state = KIRBY_EXHALE;
-            } else if (!is_walk) {
-                kirby_state = KIRBY_INHALED_IDLE;
             }
             break;
         case KIRBY_EXHALE:
             if (shift || ctrl) {
                 kirby_state = KIRBY_INHALE;
             } else if (kirby_frame_index >= KIRBY_EXHALE_FRAMES) {
-                kirby_state = KIRBY_IDLE;
+                kirby_state = KIRBY_WALK;
             }
             break;
     }
@@ -135,10 +112,6 @@ void draw_kirby(void) {
     uint16_t    duration = 0;
     const void *img      = NULL;
     switch (kirby_state) {
-        case KIRBY_IDLE:
-            duration = KIRBY_IDLE_FRAME_DURATION;
-            img      = kirby_idle[kirby_frame_index];
-            break;
         case KIRBY_WALK:
             duration = KIRBY_WALK_FRAME_DURATION;
             img      = kirby_walk[kirby_frame_index];
@@ -155,10 +128,6 @@ void draw_kirby(void) {
             duration = KIRBY_INHALED_IDLE_FRAME_DURATION;
             img      = kirby_inhaled_idle[kirby_frame_index];
             break;
-        case KIRBY_INHALED_WALK:
-            duration = KIRBY_INHALED_WALK_FRAME_DURATION;
-            img      = kirby_inhaled_walk[kirby_frame_index];
-            break;
         case KIRBY_EXHALE:
             duration = KIRBY_EXHALE_FRAME_DURATION;
             img      = kirby_exhale[kirby_frame_index];
@@ -173,13 +142,6 @@ void draw_kirby(void) {
         kirby_frame_index++;
 
         switch (kirby_state) {
-            case KIRBY_IDLE:
-                // ループ再生のためインデックスが超えたら1フレーム目にリセットする
-                if (kirby_frame_index > (KIRBY_IDLE_FRAMES - 1)) {
-                    kirby_frame_index = 0;
-                }
-
-                break;
             case KIRBY_WALK:
                 // ループ再生のためインデックスが超えたら1フレーム目にリセットする
                 if (kirby_frame_index > (KIRBY_WALK_FRAMES - 1)) {
@@ -190,13 +152,6 @@ void draw_kirby(void) {
             case KIRBY_INHALED_IDLE:
                 // ループ再生のためインデックスが超えたら1フレーム目にリセットする
                 if (kirby_frame_index > (KIRBY_INHALED_IDLE_FRAMES - 1)) {
-                    kirby_frame_index = 0;
-                }
-
-                break;
-            case KIRBY_INHALED_WALK:
-                // ループ再生のためインデックスが超えたら1フレーム目にリセットする
-                if (kirby_frame_index > (KIRBY_INHALED_WALK_FRAMES - 1)) {
                     kirby_frame_index = 0;
                 }
 
