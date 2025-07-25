@@ -2,15 +2,11 @@
 #include "kirby.h"
 #include "satisfaction_core.h"
 
-#define min(x, y) (((x) >= (y)) ? (y) : (x))
-
 typedef enum {
-    KIRBY_IDLE,
     KIRBY_WALK,
     KIRBY_JUMP,
     KIRBY_INHALE,
     KIRBY_INHALED_IDLE,
-    KIRBY_INHALED_WALK,
     KIRBY_EXHALE,
 } kirby_state_t;
 
@@ -18,31 +14,12 @@ static kirby_state_t kirby_state       = KIRBY_WALK;
 static kirby_state_t prev_kirby_state  = KIRBY_WALK;
 static uint8_t       kirby_frame_index = 0;
 static uint32_t      kirby_timer       = 0;
-static bool          prev_jump_state   = false;
-static bool          is_jump           = false;
-// スペースキー入力を検出するためのキー入力イベントのフック
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case KC_SPC:
-            if (record->event.pressed) {
-                if (!prev_jump_state) {
-                    is_jump = true;
-                } else {
-                    is_jump = false;
-                }
 
-                prev_jump_state = true;
-            } else {
-                is_jump         = false;
-                prev_jump_state = false;
-            }
-            break;
-        default:
-            break;
-    }
-
-    return true;
-}
+/**
+ * prev_jump_stateとis_jumpはkeymap.c内のprocess_record_user関数によって変更されます。
+ */
+bool prev_jump_state = false;
+bool is_jump         = false;
 
 // 時計の描画
 static void draw_clock(void) {
@@ -61,41 +38,39 @@ static void draw_clock(void) {
 }
 
 void draw_kirby(void) {
-    uint8_t mod = get_mods();
-    bool shift   = mod & MOD_MASK_SHIFT;
-    bool ctrl = mod & MOD_MASK_CTRL;
+    bool active_any_modifiers = get_mods() & (MOD_MASK_CTRL | MOD_MASK_SHIFT | MOD_MASK_ALT);
 
     // 状態遷移
     switch (kirby_state) {
         case KIRBY_WALK:
-            if (shift || ctrl) {
+            if (active_any_modifiers) {
                 kirby_state = KIRBY_INHALE;
             } else if (is_jump) {
                 kirby_state = KIRBY_JUMP;
-                is_jump = false;
+                is_jump     = false;
             }
             break;
         case KIRBY_JUMP:
-            if (shift || ctrl) {
+            if (active_any_modifiers) {
                 kirby_state = KIRBY_INHALE;
             } else if (kirby_frame_index >= KIRBY_JUMP_FRAMES) {
                 kirby_state = KIRBY_WALK;
             }
             break;
         case KIRBY_INHALE:
-            if (!shift && !ctrl) {
+            if (!active_any_modifiers) {
                 kirby_state = KIRBY_EXHALE;
             } else if (kirby_frame_index >= KIRBY_INHALE_FRAMES) {
                 kirby_state = KIRBY_INHALED_IDLE;
             }
             break;
         case KIRBY_INHALED_IDLE:
-            if (!shift && !ctrl) {
+            if (!active_any_modifiers) {
                 kirby_state = KIRBY_EXHALE;
             }
             break;
         case KIRBY_EXHALE:
-            if (shift || ctrl) {
+            if (active_any_modifiers) {
                 kirby_state = KIRBY_INHALE;
             } else if (kirby_frame_index >= KIRBY_EXHALE_FRAMES) {
                 kirby_state = KIRBY_WALK;
