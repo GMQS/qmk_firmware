@@ -21,22 +21,6 @@ static uint32_t      kirby_timer       = 0;
 bool prev_jump_state = false;
 bool is_jump         = false;
 
-// 時計の描画
-static void draw_clock(void) {
-    oled_set_cursor(13, 0);
-    uint8_t  hour   = last_minute / 60;
-    uint16_t minute = last_minute % 60;
-    bool     is_pm  = (hour / 12) > 0;
-    hour            = hour % 12;
-    if (hour == 0) {
-        hour = 12;
-    }
-
-    static char time_str[8] = "";
-    sprintf(time_str, "%02d:%02d%s", hour, minute, is_pm ? "pm" : "am");
-    oled_write(time_str, false);
-}
-
 void draw_kirby(void) {
     bool active_any_modifiers = get_mods() & (MOD_MASK_CTRL | MOD_MASK_SHIFT | MOD_MASK_ALT);
 
@@ -139,6 +123,4 @@ void draw_kirby(void) {
 
         kirby_timer = timer_read32();
     }
-
-    draw_clock();
 }
