@@ -7,7 +7,7 @@
 enum custom_keycodes {
     WIN_CLIP_BOARD = SAFE_RANGE,
     WIN_SCREENSHOT,
-}
+};
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {

@@ -93,7 +93,7 @@ void draw_kirby(void) {
             break;
     }
 
-    oled_set_cursor(0, 0);
+    oled_set_cursor(6, 0);
     oled_write_raw_P(img, KIRBY_DEFAULT_ANIM_SIZE);
 
     // 時間判定＆描画
